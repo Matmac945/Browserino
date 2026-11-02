@@ -13,6 +13,8 @@ struct BrowsersTab: View {
     @AppStorage("privateArgs") private var privateArgs: [String: String] = [:]
 
     @State private var showsChromeProfiles = false
+    /// The browser whose private argument pop-up is open, if any.
+    @State private var editingPrivateArg: String?
 
     private func move(from source: IndexSet, to destination: Int) {
         browsers.move(fromOffsets: source, toOffset: destination)
@@ -71,13 +73,47 @@ struct BrowsersTab: View {
                                 Spacer()
                                     .frame(width: 32)
 
-                                TextField(
-                                    "Private argument",
-                                    text: privateArg(for: bundle.bundleIdentifier!)
-                                )
-                                .font(
-                                    .system(size: 14).monospaced()
-                                )
+                                // Edited in a pop-up rather than a text box here:
+                                // clicks inside this reorderable list felt slow to
+                                // reach a text box.
+                                let bundleId = bundle.bundleIdentifier!
+                                let arg = privateArgs[bundleId, default: ""]
+
+                                HStack(spacing: 6) {
+                                    Text(arg.isEmpty ? "No private argument" : arg)
+                                        .font(arg.isEmpty ? .system(size: 13) : .system(size: 14).monospaced())
+                                        .foregroundStyle(arg.isEmpty ? .secondary : .primary)
+                                        .lineLimit(1)
+                                        .truncationMode(.tail)
+
+                                    Button {
+                                        editingPrivateArg = bundleId
+                                    } label: {
+                                        Image(systemName: "pencil")
+                                            .font(.system(size: 15))
+                                            .frame(width: 24, height: 24)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.borderless)
+                                    .help("Edit the private argument")
+                                    .popover(
+                                        isPresented: .init(
+                                            get: { editingPrivateArg == bundleId },
+                                            set: { if !$0 { editingPrivateArg = nil } }
+                                        ),
+                                        arrowEdge: .bottom
+                                    ) {
+                                        TextEditPopover(
+                                            title: "Private argument",
+                                            placeholder: "--incognito",
+                                            hint: "Added when you Shift-click a browser in the picker or press Shift-Return, to open the link in a private window. Chrome: --incognito. Zen and Firefox: --private-window.",
+                                            monospaced: true,
+                                            text: privateArg(for: bundleId),
+                                            close: { editingPrivateArg = nil }
+                                        )
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
 
                                 Spacer()
                                     .frame(width: 32)
