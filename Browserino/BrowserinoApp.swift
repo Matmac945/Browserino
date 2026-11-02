@@ -229,9 +229,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMenuDele
         let glass = NSGlassEffectView()
         glass.cornerRadius = BrowserinoWindow.cornerRadius
         glass.contentView = hostingView
-        selectorWindow!.contentView = glass
+        glass.autoresizingMask = [.width, .height]
+
+        // The glass blur fills its whole rectangle and softens past the rounded
+        // edge, which showed as a faint square. Clip it to the rounded shape.
+        let clip = NSView()
+        clip.wantsLayer = true
+        clip.layer?.cornerRadius = BrowserinoWindow.cornerRadius
+        clip.layer?.cornerCurve = .continuous
+        clip.layer?.masksToBounds = true
+        clip.addSubview(glass)
+
+        selectorWindow!.contentView = clip
         selectorWindow!.setContentSize(hostingView.fittingSize)
-        selectorWindow!.invalidateShadow()
+        glass.frame = clip.bounds
 
         let screen = getScreenWithMouse()!.visibleFrame
         

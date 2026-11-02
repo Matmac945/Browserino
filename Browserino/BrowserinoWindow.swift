@@ -24,7 +24,8 @@ class BrowserinoWindow: NSPanel {
         self.collectionBehavior = [.stationary, .ignoresCycle, .fullScreenAuxiliary, .canJoinAllSpaces]
         self.isOpaque = false
         self.backgroundColor = .clear
-        self.hasShadow = true
+        // No window shadow: the glass's own edge defines the panel.
+        self.hasShadow = false
         self.level = NSWindow.Level(Int(CGShieldingWindowLevel()))
         self.isMovable = false
         self.deactivateDelay()
