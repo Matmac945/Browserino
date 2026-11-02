@@ -17,26 +17,36 @@ struct PromptView: View {
     @AppStorage("copy_closeAfterCopy") private var closeAfterCopy: Bool = false
     @AppStorage("copy_alternativeShortcut") private var alternativeShortcut: Bool = false
     @AppStorage("apps_atTop") private var appsAtTop: Bool = true
+    @AppStorage("chromeProfiles") private var chromeProfiles: [String: String] = [:]
+    @AppStorage("primaryChromeProfile") private var primaryChromeProfile: String = ""
 
     let urls: [URL]
 
     @State private var selected = 0
     @FocusState private var focused: Bool
 
+    init(urls: [URL]) {
+        self.urls = urls
+        _selected = State(initialValue: initialSelection)
+    }
+
     private static let padding: CGFloat = 5
     private static let headerHeight: CGFloat = 24
     private static let separatorHeight: CGFloat = 9
     private static let maxVisibleRows = 12
 
-    /// One row in the picker: an app matched by the link's host, or a browser.
+    /// One row in the picker: an app matched by the link's host, a browser,
+    /// or a Chrome profile listed under Chrome.
     private enum Choice {
         case app(App)
         case browser(URL)
+        case profile(browser: URL, profile: ChromeProfile, label: String)
 
         var bundleURL: URL {
             switch self {
             case .app(let app): app.app
             case .browser(let browser): browser
+            case .profile(let browser, _, _): browser
             }
         }
     }
@@ -56,16 +66,40 @@ struct PromptView: View {
         browsers.filter { !hiddenBrowsers.contains($0) }
     }
 
+    /// Browsers in order, with the profiles ticked in Preferences right under Chrome.
+    private var browserChoices: [Choice] {
+        visibleBrowsers.flatMap { browser -> [Choice] in
+            guard ChromeProfiles.isChrome(browser) else { return [.browser(browser)] }
+            let profiles = ChromeProfiles.shown(chromeProfiles).map {
+                Choice.profile(browser: browser, profile: $0.profile, label: $0.label)
+            }
+            return [.browser(browser)] + profiles
+        }
+    }
+
     private var choices: [Choice] {
         let appChoices = appsForUrls.map(Choice.app)
-        let browserChoices = visibleBrowsers.map(Choice.browser)
+        let browserChoices = self.browserChoices
         return appsAtTop ? appChoices + browserChoices : browserChoices + appChoices
     }
 
     /// Row index the divider between apps and browsers sits above, if both are shown.
     private var dividerIndex: Int? {
         guard !appsForUrls.isEmpty, !visibleBrowsers.isEmpty else { return nil }
-        return appsAtTop ? appsForUrls.count : visibleBrowsers.count
+        return appsAtTop ? appsForUrls.count : browserChoices.count
+    }
+
+    /// The row highlighted when the picker opens. Normally the first one, but
+    /// when a Chrome profile is the primary browser (set from the Rex menu)
+    /// and Chrome is on top, it's that profile, so Return opens it.
+    private var initialSelection: Int {
+        guard !primaryChromeProfile.isEmpty else { return 0 }
+        let choices = self.choices
+        guard case .browser(let first)? = choices.first, ChromeProfiles.isChrome(first) else { return 0 }
+        return choices.firstIndex { choice in
+            guard case .profile(_, let profile, _) = choice else { return false }
+            return profile.directory == primaryChromeProfile
+        } ?? 0
     }
 
     private var listHeight: CGFloat {
@@ -102,6 +136,13 @@ struct PromptView: View {
             openUrlsInApp(app: app)
         case .browser(let browser):
             BrowserUtil.openURL(urls, app: browser, isIncognito: isIncognito)
+        case .profile(let browser, let profile, _):
+            BrowserUtil.openURL(
+                urls,
+                app: browser,
+                isIncognito: isIncognito,
+                profileDirectory: profile.directory
+            )
         }
     }
 
@@ -111,7 +152,14 @@ struct PromptView: View {
         open(choices[selected], isIncognito: isIncognito)
     }
 
+    private func profileRow(_ choice: Choice) -> (label: String, avatar: NSImage)? {
+        guard case .profile(_, let profile, let label) = choice else { return nil }
+        return (label, profile.avatar)
+    }
+
+    /// Letter shortcuts belong to the browser, so profile rows only get a number.
     private func shortcut(for choice: Choice) -> String? {
+        if case .profile = choice { return nil }
         guard let id = Bundle(url: choice.bundleURL)?.bundleIdentifier else { return nil }
         return shortcuts[id]
     }
@@ -176,6 +224,7 @@ struct PromptView: View {
 
                             PromptItem(
                                 app: choice.bundleURL,
+                                profile: profileRow(choice),
                                 shortcut: custom,
                                 keyHint: custom?.uppercased() ?? (index < 9 ? "\(index + 1)" : nil),
                                 selected: selected == index

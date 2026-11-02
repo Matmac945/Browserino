@@ -11,6 +11,9 @@ struct PromptItem: View {
     static let height: CGFloat = 28
 
     var app: URL
+    /// Set for a Chrome profile row: drawn indented under Chrome, with the
+    /// profile's picture and the name chosen in Preferences.
+    var profile: (label: String, avatar: NSImage)? = nil
     /// Letter shortcut the user assigned in Preferences, if any.
     var shortcut: String?
     /// Key hint shown on the right: the letter shortcut, or the row number.
@@ -21,11 +24,18 @@ struct PromptItem: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
-                Image(nsImage: app.appIcon)
-                    .resizable()
-                    .frame(width: 20, height: 20)
+                if let profile {
+                    Image(nsImage: profile.avatar)
+                        .resizable()
+                        .frame(width: 16, height: 16)
+                        .padding(.leading, 14)
+                } else {
+                    Image(nsImage: app.appIcon)
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                }
 
-                Text(app.appDisplayName)
+                Text(profile?.label ?? app.appDisplayName)
                     .font(.system(size: 13))
                     .lineLimit(1)
                     .truncationMode(.tail)

@@ -64,20 +64,32 @@ class BrowserUtil {
         return filteredUrlsForApplications
     }
     
-    static func openURL(_ urls: [URL], app: URL, isIncognito: Bool) {
+    /// `profileDirectory` is a Chrome profile folder such as "Profile 4".
+    static func openURL(_ urls: [URL], app: URL, isIncognito: Bool, profileDirectory: String? = nil) {
         guard let bundle = Bundle(url: app) else {
             return
         }
-        
+
         let configuration = NSWorkspace.OpenConfiguration()
-        
-        if isIncognito, let privateArg = privateArgs[bundle.bundleIdentifier!] {
-            configuration.createsNewApplicationInstance = true
-            configuration.arguments = [privateArg] + urls.map(\.absoluteString)
+
+        var arguments: [String] = []
+        if let profileDirectory {
+            arguments.append("--profile-directory=\(profileDirectory)")
         }
-        
+        if isIncognito, let privateArg = privateArgs[bundle.bundleIdentifier!], !privateArg.isEmpty {
+            arguments.append(privateArg)
+        }
+
+        // Flags only reach the browser on its command line, so the links go
+        // there too. A running Chrome hands the whole command line over to
+        // its open window, so this works whether or not it's already open.
+        if !arguments.isEmpty {
+            configuration.createsNewApplicationInstance = true
+            configuration.arguments = arguments + urls.map(\.absoluteString)
+        }
+
         NSWorkspace.shared.open(
-            isIncognito ? [] : urls,
+            arguments.isEmpty ? urls : [],
             withApplicationAt: app,
             configuration: configuration
         )
