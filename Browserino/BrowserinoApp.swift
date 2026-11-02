@@ -8,12 +8,14 @@
 import SwiftUI
 import Foundation
 
-class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMenuDelegate {
     private var selectorWindow: BrowserinoWindow?
     private var preferencesWindow: NSWindow?
-    
+
     @AppStorage("rules") private var rules: [Rule] = []
     @AppStorage("showInMenuBar") private var showInMenuBar: Bool = true
+    @AppStorage("browsers") private var browsers: [URL] = []
+    @AppStorage("hiddenBrowsers") private var hiddenBrowsers: [URL] = []
     
     var statusMenu: NSMenu!
     var statusBarItem: NSStatusItem!
@@ -39,16 +41,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
                 statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
                 let statusButton = statusBarItem!.button
                 statusButton!.image = NSImage.menuIcon
-                
-                let preferences = NSMenuItem(title: "Preferences...", action: #selector(openPreferences), keyEquivalent: "")
-                let quit = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "")
-                
+
                 statusMenu = NSMenu()
-                
-                statusMenu!.addItem(preferences)
-                statusMenu!.addItem(.separator())
-                statusMenu!.addItem(quit)
-                
+                statusMenu.delegate = self
+                menuNeedsUpdate(statusMenu)
+
                 statusBarItem!.menu = statusMenu!
             }
         } else {
@@ -89,6 +86,72 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     
     @objc func quitApp() {
         NSApplication.shared.terminate(nil)
+    }
+
+    // Rebuilt every time the menu opens so the clipboard state and
+    // browser list are always current.
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        menu.removeAllItems()
+
+        let openClipboard = NSMenuItem(
+            title: "Open URL from Clipboard",
+            action: URL.fromClipboard == nil ? nil : #selector(openClipboardURL),
+            keyEquivalent: ""
+        )
+        openClipboard.target = self
+        menu.addItem(openClipboard)
+        menu.addItem(.separator())
+
+        let visibleBrowsers = browsers.filter { !hiddenBrowsers.contains($0) }
+        if !visibleBrowsers.isEmpty {
+            menu.addItem(.sectionHeader(title: "Primary Browser"))
+
+            for (index, browser) in visibleBrowsers.enumerated() {
+                let item = NSMenuItem(
+                    title: browser.appDisplayName,
+                    action: #selector(setPrimaryBrowser(_:)),
+                    keyEquivalent: ""
+                )
+                item.target = self
+                item.representedObject = browser
+                item.state = index == 0 ? .on : .off
+
+                let icon = browser.appIcon.copy() as! NSImage
+                icon.size = NSSize(width: 18, height: 18)
+                item.image = icon
+
+                menu.addItem(item)
+            }
+
+            menu.addItem(.separator())
+        }
+
+        let preferences = NSMenuItem(title: "Preferences…", action: #selector(openPreferences), keyEquivalent: ",")
+        preferences.target = self
+        menu.addItem(preferences)
+        menu.addItem(.separator())
+
+        let quit = NSMenuItem(title: "Quit Browserino", action: #selector(quitApp), keyEquivalent: "q")
+        quit.target = self
+        menu.addItem(quit)
+    }
+
+    @objc func openClipboardURL() {
+        guard let url = URL.fromClipboard else { return }
+        application(NSApplication.shared, open: [url])
+    }
+
+    // The primary browser is simply the first one in the list: it shows first
+    // in the picker and is highlighted, so Return opens it.
+    @objc func setPrimaryBrowser(_ sender: NSMenuItem) {
+        guard let browser = sender.representedObject as? URL,
+              let index = browsers.firstIndex(of: browser)
+        else { return }
+
+        var reordered = browsers
+        reordered.remove(at: index)
+        reordered.insert(browser, at: 0)
+        browsers = reordered
     }
     
     @objc func openPreferences() {
@@ -156,7 +219,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         if selectorWindow == nil {
             selectorWindow = BrowserinoWindow()
         }
-        
+
+        // Liquid Glass panel that sizes itself to the list, like a native menu.
+        let hostingView = NSHostingView(
+            rootView: PromptView(
+                urls: processedUrls
+            )
+        )
+        let glass = NSGlassEffectView()
+        glass.cornerRadius = BrowserinoWindow.cornerRadius
+        glass.contentView = hostingView
+        selectorWindow!.contentView = glass
+        selectorWindow!.setContentSize(hostingView.fittingSize)
+        selectorWindow!.invalidateShadow()
+
         let screen = getScreenWithMouse()!.visibleFrame
         
         selectorWindow?.setFrameOrigin(
@@ -176,13 +252,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         
         NSApplication.shared.activate(ignoringOtherApps: true)
         selectorWindow!.deactivateDelay()
-        
-        selectorWindow!.contentView = NSHostingView(
-            rootView: PromptView(
-                urls: processedUrls
-            )
-        )
-        
+
         selectorWindow!.makeKeyAndOrderFront(nil)
         selectorWindow!.isReleasedWhenClosed = false
         selectorWindow!.delegate = self

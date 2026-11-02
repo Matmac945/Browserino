@@ -8,29 +8,18 @@
 import SwiftUI
 import Foundation
 
-struct BackgroundOnHover: ViewModifier {
-    @State private var isHovered = false
-    
-    func body(content: Content) -> some View {
-        content
-            .background(isHovered ? Color.secondary.opacity(0.5) : .clear)
-            .onHover { isHovered in
-                withAnimation {
-                    self.isHovered = isHovered
-                }
-            }
-    }
-}
-
+// Native menu row: the accent highlight follows the mouse and arrow keys,
+// so there is no separate hover effect.
 struct SelectButtonStyle: ButtonStyle {
     let selected: Bool
-    
+
     func makeBody(configuration: Self.Configuration) -> some View {
         configuration.label
-            .contentShape(RoundedRectangle(cornerSize: CGSize(width: 8, height: 8)))
-            .foregroundStyle(self.selected ? Color.white : Color.primary)
-            .background(configuration.isPressed || selected ? Color.accentColor : .clear)
-            .modifier(BackgroundOnHover())
-            .cornerRadius(8)
+            .foregroundStyle(selected ? Color.white : Color.primary)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(configuration.isPressed || selected ? Color.accentColor : .clear)
+            )
+            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }

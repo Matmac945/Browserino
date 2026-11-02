@@ -8,47 +8,41 @@
 import SwiftUI
 
 struct PromptItem: View {
-    var browser: URL
-    var urls: [URL]
-    var bundle: Bundle
+    static let height: CGFloat = 28
+
+    var app: URL
+    /// Letter shortcut the user assigned in Preferences, if any.
     var shortcut: String?
+    /// Key hint shown on the right: the letter shortcut, or the row number.
+    var keyHint: String?
+    var selected: Bool
     var action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
-            HStack {
-                Text(bundle.infoDictionary!["CFBundleName"] as! String)
-                    .font(
-                        .system(size: 12, weight: .bold)
-                    )
-                
-                Spacer()
-                
-                if let shortcut {
-                    Text(shortcut)
-                        .font(.caption)
-                        .frame(minWidth: 4)
-                        .opacity(0.5)
-                        .padding(5)
-                        .background(
-                            Color.secondary.opacity(0.2)
-                        )
-                        .cornerRadius(4)
+            HStack(spacing: 8) {
+                Image(nsImage: app.appIcon)
+                    .resizable()
+                    .frame(width: 20, height: 20)
+
+                Text(app.appDisplayName)
+                    .font(.system(size: 13))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+
+                Spacer(minLength: 8)
+
+                if let keyHint {
+                    Text(keyHint)
+                        .font(.system(size: 12))
+                        .foregroundStyle(selected ? Color.white.opacity(0.8) : Color.secondary)
                 }
-                
-                Spacer()
-                    .frame(width: 8)
-                
-                Image(
-                    nsImage: NSWorkspace.shared.icon(
-                        forFile: bundle.bundlePath
-                    )
-                )
-                .resizable()
-                .frame(width: 24, height: 24)
             }
-            .padding(8)
+            .padding(.horizontal, 8)
+            .frame(height: Self.height)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(SelectButtonStyle(selected: selected))
         .if(shortcut != nil) {
             return $0.keyboardShortcut(
                 KeyEquivalent(shortcut!.lowercased().first!),

@@ -20,9 +20,26 @@ struct PromptView: View {
 
     let urls: [URL]
 
-    @State private var opacityAnimation = 0.0
     @State private var selected = 0
     @FocusState private var focused: Bool
+
+    private static let padding: CGFloat = 5
+    private static let headerHeight: CGFloat = 24
+    private static let separatorHeight: CGFloat = 9
+    private static let maxVisibleRows = 12
+
+    /// One row in the picker: an app matched by the link's host, or a browser.
+    private enum Choice {
+        case app(App)
+        case browser(URL)
+
+        var bundleURL: URL {
+            switch self {
+            case .app(let app): app.app
+            case .browser(let browser): browser
+            }
+        }
+    }
 
     var appsForUrls: [App] {
         urls.flatMap { url in
@@ -37,6 +54,23 @@ struct PromptView: View {
 
     var visibleBrowsers: [URL] {
         browsers.filter { !hiddenBrowsers.contains($0) }
+    }
+
+    private var choices: [Choice] {
+        let appChoices = appsForUrls.map(Choice.app)
+        let browserChoices = visibleBrowsers.map(Choice.browser)
+        return appsAtTop ? appChoices + browserChoices : browserChoices + appChoices
+    }
+
+    /// Row index the divider between apps and browsers sits above, if both are shown.
+    private var dividerIndex: Int? {
+        guard !appsForUrls.isEmpty, !visibleBrowsers.isEmpty else { return nil }
+        return appsAtTop ? appsForUrls.count : visibleBrowsers.count
+    }
+
+    private var listHeight: CGFloat {
+        let rows = CGFloat(min(choices.count, Self.maxVisibleRows)) * PromptItem.height
+        return rows + (dividerIndex == nil ? 0 : Self.separatorHeight)
     }
 
     func openUrlsInApp(app: App) {
@@ -62,82 +96,103 @@ struct PromptView: View {
         )
     }
 
+    private func open(_ choice: Choice, isIncognito: Bool) {
+        switch choice {
+        case .app(let app):
+            openUrlsInApp(app: app)
+        case .browser(let browser):
+            BrowserUtil.openURL(urls, app: browser, isIncognito: isIncognito)
+        }
+    }
+
+    private func openSelected(isIncognito: Bool) {
+        let choices = self.choices
+        guard choices.indices.contains(selected) else { return }
+        open(choices[selected], isIncognito: isIncognito)
+    }
+
+    private func shortcut(for choice: Choice) -> String? {
+        guard let id = Bundle(url: choice.bundleURL)?.bundleIdentifier else { return nil }
+        return shortcuts[id]
+    }
+
+    private func copyLink() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.declareTypes([.string], owner: nil)
+        pasteboard.setString(urls.first?.absoluteString ?? "", forType: .string)
+
+        if closeAfterCopy {
+            NSApplication.shared.keyWindow?.close()
+        }
+    }
+
+    private var separator: some View {
+        Divider()
+            .padding(.horizontal, 5)
+            .frame(height: Self.separatorHeight)
+    }
+
     var body: some View {
-        VStack {
+        let choices = self.choices
+
+        VStack(spacing: 0) {
+            if let host = urls.first?.host() {
+                HStack(spacing: 6) {
+                    Text(host)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+
+                    Spacer(minLength: 6)
+
+                    Button(action: copyLink) {
+                        Image(systemName: "doc.on.doc")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .keyboardShortcut(
+                        KeyEquivalent("c"),
+                        modifiers: alternativeShortcut ? [.command] : [.command, .option]
+                    )
+                    .toolTip(urls.first?.absoluteString ?? "")
+                }
+                .padding(.horizontal, 10)
+                .frame(height: Self.headerHeight)
+
+                separator
+            }
+
             ScrollViewReader { scrollViewProxy in
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 2) {
-                        if !appsForUrls.isEmpty && appsAtTop {
-                            ForEach(Array(appsForUrls.enumerated()), id: \.offset) { index, app in
-                                if let bundle = Bundle(url: app.app) {
-                                    PromptItem(
-                                        browser: app.app,
-                                        urls: urls,
-                                        bundle: bundle,
-                                        shortcut: shortcuts[bundle.bundleIdentifier!]
-                                    ) {
-                                        openUrlsInApp(app: app)
-                                    }
-                                    .id(index)
-                                    .buttonStyle(
-                                        SelectButtonStyle(
-                                            selected: selected == index
-                                        )
-                                    )
-                                }
+                    VStack(spacing: 0) {
+                        ForEach(Array(choices.enumerated()), id: \.offset) { index, choice in
+                            if index == dividerIndex {
+                                separator
                             }
-                            
-                            Divider()
-                        }
-                        
-                        ForEach(Array(visibleBrowsers.enumerated()), id: \.offset) {
-                            index, browser in
-                            if let bundle = Bundle(url: browser) {
-                                PromptItem(
-                                    browser: browser,
-                                    urls: urls,
-                                    bundle: bundle,
-                                    shortcut: shortcuts[bundle.bundleIdentifier!]
-                                ) {
-                                    BrowserUtil.openURL(
-                                        urls,
-                                        app: browser,
-                                        isIncognito: NSEvent.modifierFlags.contains(.shift)
-                                    )
-                                }
-                                .id(index + (appsAtTop ? appsForUrls.count : 0))
-                                .buttonStyle(
-                                    SelectButtonStyle(
-                                        selected: selected == index + (appsAtTop ? appsForUrls.count : 0)
-                                    )
-                                )
+
+                            let custom = shortcut(for: choice)
+
+                            PromptItem(
+                                app: choice.bundleURL,
+                                shortcut: custom,
+                                keyHint: custom?.uppercased() ?? (index < 9 ? "\(index + 1)" : nil),
+                                selected: selected == index
+                            ) {
+                                open(choice, isIncognito: NSEvent.modifierFlags.contains(.shift))
                             }
-                        }
-
-                        if !appsForUrls.isEmpty && !appsAtTop {
-                            Divider()
-
-                            ForEach(Array(appsForUrls.enumerated()), id: \.offset) { index, app in
-                                if let bundle = Bundle(url: app.app) {
-                                    PromptItem(
-                                        browser: app.app,
-                                        urls: urls,
-                                        bundle: bundle,
-                                        shortcut: shortcuts[bundle.bundleIdentifier!]
-                                    ) {
-                                        openUrlsInApp(app: app)
-                                    }
-                                    .id(visibleBrowsers.count + index)
-                                    .buttonStyle(
-                                        SelectButtonStyle(
-                                            selected: selected == visibleBrowsers.count + index
-                                        )
-                                    )
+                            .id(index)
+                            .onHover { hovering in
+                                if hovering {
+                                    selected = index
                                 }
                             }
                         }
                     }
                 }
+                .frame(height: listHeight)
+                .scrollBounceBehavior(.basedOnSize)
                 .focusable()
                 .focusEffectDisabledCompat()
                 .focused($focused)
@@ -146,110 +201,40 @@ struct PromptView: View {
                         selected = max(0, selected - 1)
                         scrollViewProxy.scrollTo(selected, anchor: .center)
                     } else if command == .down {
-                        selected = min(visibleBrowsers.count + appsForUrls.count - 1, selected + 1)
+                        selected = min(choices.count - 1, selected + 1)
                         scrollViewProxy.scrollTo(selected, anchor: .center)
                     }
                 }
                 .background {
-                    Button(action: {
-                        if appsAtTop {
-                            if selected < appsForUrls.count {
-                                openUrlsInApp(app: appsForUrls[selected])
-                            } else {
-                                BrowserUtil.openURL(
-                                    urls,
-                                    app: visibleBrowsers[selected - appsForUrls.count],
-                                    isIncognito: false
-                                )
-                            }
-                        } else {
-                            if selected < visibleBrowsers.count {
-                                BrowserUtil.openURL(
-                                    urls,
-                                    app: visibleBrowsers[selected],
-                                    isIncognito: false
-                                )
-                            } else {
-                                openUrlsInApp(app: appsForUrls[selected - visibleBrowsers.count])
-                            }
-                        }
-                    }) {}
-                    .opacity(0)
-                    .keyboardShortcut(.defaultAction)
+                    Button(action: { openSelected(isIncognito: false) }) {}
+                        .opacity(0)
+                        .keyboardShortcut(.defaultAction)
 
-                    Button(action: {
-                        if appsAtTop {
-                            if selected < appsForUrls.count {
-                                openUrlsInApp(app: appsForUrls[selected])
-                            } else {
-                                BrowserUtil.openURL(
-                                    urls,
-                                    app: visibleBrowsers[selected - appsForUrls.count],
-                                    isIncognito: true
-                                )
-                            }
-                        } else {
-                            if selected < visibleBrowsers.count {
-                                BrowserUtil.openURL(
-                                    urls,
-                                    app: visibleBrowsers[selected],
-                                    isIncognito: true
-                                )
-                            } else {
-                                openUrlsInApp(app: appsForUrls[selected - visibleBrowsers.count])
-                            }
-                        }
-                    }) {}
-                    .opacity(0)
-                    .keyboardShortcut(.return, modifiers: [.shift])
+                    Button(action: { openSelected(isIncognito: true) }) {}
+                        .opacity(0)
+                        .keyboardShortcut(.return, modifiers: [.shift])
 
                     Button(action: {
                         NSApplication.shared.keyWindow?.close()
                     }) {}
                     .opacity(0)
                     .keyboardShortcut(.cancelAction)
+
+                    // Number keys 1–9 open the matching row.
+                    ForEach(0..<min(9, choices.count), id: \.self) { index in
+                        Button(action: { open(choices[index], isIncognito: false) }) {}
+                            .opacity(0)
+                            .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")), modifiers: [])
+                    }
                 }
                 .onAppear {
                     focused.toggle()
-                    withAnimation(.interactiveSpring(duration: 0.3)) {
-                        opacityAnimation = 1
-                    }
                 }
                 .scrollEdgeEffectDisabledCompat()
             }
-
-            Divider()
-
-            if let host = urls.first?.host() {
-                Button(action: {
-                    let pasteboard = NSPasteboard.general
-                    pasteboard.declareTypes([.string], owner: nil)
-                    pasteboard.setString(urls.first?.absoluteString ?? "", forType: .string)
-
-                    if closeAfterCopy {
-                        NSApplication.shared.keyWindow?.close()
-                    }
-                }) {
-                    Text(
-                        host
-                    )
-                }
-                .buttonStyle(.plain)
-                .keyboardShortcut(
-                    KeyEquivalent("c"),
-                    modifiers: alternativeShortcut ? [.command] : [.command, .option]
-                )
-                .toolTip(urls.first?.absoluteString ?? "")
-            }
         }
-        .padding(12)
-        .frame(
-            maxWidth: .infinity,
-            maxHeight: .infinity
-        )
-        .background(BlurredView())
-        .opacity(opacityAnimation)
-        .edgesIgnoringSafeArea(.all)
+        .padding(Self.padding)
+        .frame(width: BrowserinoWindow.selectorWidth)
     }
 }
 
