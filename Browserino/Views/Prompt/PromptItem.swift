@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PromptItem: View {
-    static let height: CGFloat = 28
+    static let height: CGFloat = 34
 
     var app: URL
     /// Set for a Chrome profile row: drawn indented under Chrome, with the
@@ -23,20 +23,20 @@ struct PromptItem: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
+            HStack(spacing: 10) {
                 if let profile {
                     Image(nsImage: profile.avatar)
                         .resizable()
-                        .frame(width: 16, height: 16)
-                        .padding(.leading, 14)
+                        .frame(width: 20, height: 20)
+                        .padding(.leading, 16)
                 } else {
                     Image(nsImage: app.appIcon)
                         .resizable()
-                        .frame(width: 20, height: 20)
+                        .frame(width: 24, height: 24)
                 }
 
                 Text(profile?.label ?? app.appDisplayName)
-                    .font(.system(size: 13))
+                    .font(.system(size: 15))
                     .lineLimit(1)
                     .truncationMode(.tail)
 
@@ -44,11 +44,11 @@ struct PromptItem: View {
 
                 if let keyHint {
                     Text(keyHint)
-                        .font(.system(size: 12))
+                        .font(.system(size: 13))
                         .foregroundStyle(selected ? Color.white.opacity(0.8) : Color.secondary)
                 }
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 12)
             .frame(height: Self.height)
             .contentShape(Rectangle())
         }

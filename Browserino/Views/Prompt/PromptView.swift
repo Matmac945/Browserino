@@ -30,9 +30,9 @@ struct PromptView: View {
         _selected = State(initialValue: initialSelection)
     }
 
-    private static let padding: CGFloat = 5
-    private static let headerHeight: CGFloat = 24
-    private static let separatorHeight: CGFloat = 9
+    private static let padding: CGFloat = 6
+    private static let headerHeight: CGFloat = 28
+    private static let separatorHeight: CGFloat = 11
     private static let maxVisibleRows = 12
 
     /// One row in the picker: an app matched by the link's host, a browser,
@@ -187,7 +187,7 @@ struct PromptView: View {
             if let host = urls.first?.host() {
                 HStack(spacing: 6) {
                     Text(host)
-                        .font(.system(size: 11))
+                        .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -196,7 +196,7 @@ struct PromptView: View {
 
                     Button(action: copyLink) {
                         Image(systemName: "doc.on.doc")
-                            .font(.system(size: 11))
+                            .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -206,7 +206,7 @@ struct PromptView: View {
                     )
                     .toolTip(urls.first?.absoluteString ?? "")
                 }
-                .padding(.horizontal, 10)
+                .padding(.horizontal, 12)
                 .frame(height: Self.headerHeight)
 
                 separator
