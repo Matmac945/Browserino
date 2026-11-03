@@ -16,7 +16,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMenuDele
     @AppStorage("showInMenuBar") private var showInMenuBar: Bool = true
     @AppStorage("browsers") private var browsers: [URL] = []
     @AppStorage("hiddenBrowsers") private var hiddenBrowsers: [URL] = []
-    
+    @AppStorage("chromeProfiles") private var chromeProfiles: [String: String] = [:]
+    @AppStorage("primaryChromeProfile") private var primaryChromeProfile: String = ""
+
     var statusMenu: NSMenu!
     var statusBarItem: NSStatusItem!
     
@@ -107,6 +109,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMenuDele
             menu.addItem(.sectionHeader(title: "Primary Browser"))
 
             for (index, browser) in visibleBrowsers.enumerated() {
+                // Chrome's ticked profiles sit indented under it, like in the picker.
+                let profiles = ChromeProfiles.isChrome(browser)
+                    ? ChromeProfiles.shown(chromeProfiles) : []
+                let primaryProfile = index == 0
+                    ? profiles.first { $0.profile.directory == primaryChromeProfile } : nil
+
                 let item = NSMenuItem(
                     title: browser.appDisplayName,
                     action: #selector(setPrimaryBrowser(_:)),
@@ -114,13 +122,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMenuDele
                 )
                 item.target = self
                 item.representedObject = browser
-                item.state = index == 0 ? .on : .off
+                item.state = index == 0 && primaryProfile == nil ? .on : .off
 
                 let icon = browser.appIcon.copy() as! NSImage
                 icon.size = NSSize(width: 18, height: 18)
                 item.image = icon
 
                 menu.addItem(item)
+
+                for (profile, label) in profiles {
+                    let profileItem = NSMenuItem(
+                        title: label,
+                        action: #selector(setPrimaryProfile(_:)),
+                        keyEquivalent: ""
+                    )
+                    profileItem.target = self
+                    profileItem.representedObject = profile.directory
+                    profileItem.indentationLevel = 1
+                    profileItem.state = profile.directory == primaryProfile?.profile.directory ? .on : .off
+
+                    let avatar = profile.avatar.copy() as! NSImage
+                    avatar.size = NSSize(width: 16, height: 16)
+                    profileItem.image = avatar
+
+                    menu.addItem(profileItem)
+                }
             }
 
             menu.addItem(.separator())
@@ -144,9 +170,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMenuDele
     // The primary browser is simply the first one in the list: it shows first
     // in the picker and is highlighted, so Return opens it.
     @objc func setPrimaryBrowser(_ sender: NSMenuItem) {
-        guard let browser = sender.representedObject as? URL,
-              let index = browsers.firstIndex(of: browser)
+        guard let browser = sender.representedObject as? URL else { return }
+        primaryChromeProfile = ""
+        moveToTop(browser)
+    }
+
+    // A profile as primary browser: Chrome moves to the top, and the picker
+    // opens with that profile highlighted instead of plain Chrome.
+    @objc func setPrimaryProfile(_ sender: NSMenuItem) {
+        guard let directory = sender.representedObject as? String,
+              let chrome = browsers.first(where: ChromeProfiles.isChrome)
         else { return }
+        primaryChromeProfile = directory
+        moveToTop(chrome)
+    }
+
+    private func moveToTop(_ browser: URL) {
+        guard let index = browsers.firstIndex(of: browser) else { return }
 
         var reordered = browsers
         reordered.remove(at: index)

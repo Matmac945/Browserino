@@ -17,9 +17,9 @@ struct SelectButtonStyle: ButtonStyle {
         configuration.label
             .foregroundStyle(selected ? Color.white : Color.primary)
             .background(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(configuration.isPressed || selected ? Color.accentColor : .clear)
             )
-            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }

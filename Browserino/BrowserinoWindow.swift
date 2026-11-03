@@ -9,9 +9,9 @@ import Foundation
 import AppKit
 
 class BrowserinoWindow: NSPanel {
-    static let selectorWidth: CGFloat = 240
+    static let selectorWidth: CGFloat = 270
     static let selectorHeight: CGFloat = 200
-    static let cornerRadius: CGFloat = 14
+    static let cornerRadius: CGFloat = 16
 
     public convenience init() {
         self.init(

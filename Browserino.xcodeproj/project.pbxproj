@@ -25,6 +25,7 @@
 		986AC6242CECDB5000884C40 /* BrowserinoApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986AC6232CECDB4700884C40 /* BrowserinoApplication.swift */; };
 		986DC8072CFE42E300447DC7 /* RulesTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986DC8062CFE42E000447DC7 /* RulesTab.swift */; };
 		986DC8092CFE42EB00447DC7 /* Rule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986DC8082CFE42EA00447DC7 /* Rule.swift */; };
+		C4A1E0F12E00000000000002 /* ChromeProfiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4A1E0F12E00000000000001 /* ChromeProfiles.swift */; };
 		986DC80C2CFE447600447DC7 /* EditRuleForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986DC80B2CFE447200447DC7 /* EditRuleForm.swift */; };
 		986DF3C42E45ED0500D5A3C4 /* View+FocusEffectDisabled.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986DF3C32E45ED0100D5A3C4 /* View+FocusEffectDisabled.swift */; };
 		986DF3C82E45F2F000D5A3C4 /* View+OnKeyPress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986DF3C72E45F2EC00D5A3C4 /* View+OnKeyPress.swift */; };
@@ -61,6 +62,7 @@
 		986AC6232CECDB4700884C40 /* BrowserinoApplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserinoApplication.swift; sourceTree = "<group>"; };
 		986DC8062CFE42E000447DC7 /* RulesTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesTab.swift; sourceTree = "<group>"; };
 		986DC8082CFE42EA00447DC7 /* Rule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rule.swift; sourceTree = "<group>"; };
+		C4A1E0F12E00000000000001 /* ChromeProfiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChromeProfiles.swift; sourceTree = "<group>"; };
 		986DC80B2CFE447200447DC7 /* EditRuleForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditRuleForm.swift; sourceTree = "<group>"; };
 		986DF3C32E45ED0100D5A3C4 /* View+FocusEffectDisabled.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+FocusEffectDisabled.swift"; sourceTree = "<group>"; };
 		986DF3C72E45F2EC00D5A3C4 /* View+OnKeyPress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+OnKeyPress.swift"; sourceTree = "<group>"; };
@@ -167,6 +169,7 @@
 			children = (
 				986DC8082CFE42EA00447DC7 /* Rule.swift */,
 				664FDF212CE4AA6B009766AA /* BrowserUtil.swift */,
+				C4A1E0F12E00000000000001 /* ChromeProfiles.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -291,6 +294,7 @@
 				9830F0C32C11DEED00D69C88 /* ButtonStyles.swift in Sources */,
 				9830F0B62C119CD800D69C88 /* main.swift in Sources */,
 				664FDF222CE4AA6B009766AA /* BrowserUtil.swift in Sources */,
+				C4A1E0F12E00000000000002 /* ChromeProfiles.swift in Sources */,
 				9838C9802E9BC6CF00261421 /* View+Tooltip.swift in Sources */,
 				9830F0B92C11B09700D69C88 /* BlurredView.swift in Sources */,
 				986AC6242CECDB5000884C40 /* BrowserinoApplication.swift in Sources */,
