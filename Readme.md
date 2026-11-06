@@ -21,24 +21,30 @@ What it changes:
 
 # Install
 
-Needs macOS 26. Paste this into Terminal:
+Needs macOS 26.
+
+### ⬇️ [Download Linkraptor.dmg](https://github.com/Matmac945/Linkraptor/releases/latest/download/Linkraptor.dmg)
+
+That link always gets the newest version. You can also find it on the [Releases page](https://github.com/Matmac945/Linkraptor/releases/latest), under **Assets**: choose **Linkraptor.dmg**.
+
+**1. Copy it to Applications.** Open the downloaded `Linkraptor.dmg`. In the window that appears, drag the **Linkraptor** icon onto the **Applications** folder. Then eject the disk (the eject button next to "Linkraptor" in the Finder sidebar).
+
+**2. Open it the first time.** Open Linkraptor from your Applications folder. macOS will say *"Linkraptor" Not Opened* because the app isn't signed with a paid Apple certificate. It's safe: click **Done** (not Move to Trash).
+
+**3. Allow it.** Open **System Settings → Privacy & Security** and scroll down to the **Security** section. Next to the "Linkraptor was blocked" message, click **Open Anyway**, then enter your Mac password. Linkraptor opens, and the dinosaur appears in your menu bar.
+
+**4. Make it your default browser.** Open **System Settings → Desktop & Dock**, find **Default web browser**, and choose **Linkraptor**.
+
+That's it. You only do steps 2 and 3 once. Linkraptor checks for updates every day and installs them on its own. To check right away, click the dinosaur in the menu bar and choose **Check for Updates…**.
+
+<details>
+<summary>Comfortable with Terminal? Install with one line instead</summary>
+
+This skips steps 1–3 above. You still need step 4 afterwards.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Matmac945/Linkraptor/main/scripts/install.sh | bash
 ```
-
-Then set Linkraptor as your default browser: **System Settings → Desktop & Dock → Default web browser**.
-
-That's it. Linkraptor checks for updates once a day and installs them on its own. To check right away, open the dinosaur menu in the menu bar and choose **Check for Updates…**.
-
-<details>
-<summary>Prefer to install from the DMG?</summary>
-
-1. Download [Linkraptor.dmg](https://github.com/Matmac945/Linkraptor/releases/latest/download/Linkraptor.dmg) and drag Linkraptor into Applications.
-2. Open it. macOS will say it can't verify the developer, because Linkraptor isn't signed with a paid Apple certificate. Click **Done**.
-3. Go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to Linkraptor.
-
-You only need to do this once. Updates install without asking.
 </details>
 
 # Releasing a new version (maintainers)
