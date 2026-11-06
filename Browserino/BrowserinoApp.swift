@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Foundation
+import Sparkle
 
 class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMenuDelegate {
     private var selectorWindow: BrowserinoWindow?
@@ -18,6 +19,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMenuDele
     @AppStorage("hiddenBrowsers") private var hiddenBrowsers: [URL] = []
     @AppStorage("chromeProfiles") private var chromeProfiles: [String: String] = [:]
     @AppStorage("primaryChromeProfile") private var primaryChromeProfile: String = ""
+
+    // Checks GitHub Releases for new versions (feed URL and public key live
+    // in Info.plist) and installs them; also checks daily in the background.
+    private let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
 
     var statusMenu: NSMenu!
     var statusBarItem: NSStatusItem!
@@ -152,12 +161,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMenuDele
             menu.addItem(.separator())
         }
 
+        let checkForUpdates = NSMenuItem(
+            title: "Check for Updates…",
+            action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)),
+            keyEquivalent: ""
+        )
+        checkForUpdates.target = updaterController
+        menu.addItem(checkForUpdates)
+
         let preferences = NSMenuItem(title: "Preferences…", action: #selector(openPreferences), keyEquivalent: ",")
         preferences.target = self
         menu.addItem(preferences)
         menu.addItem(.separator())
 
-        let quit = NSMenuItem(title: "Quit Browserino", action: #selector(quitApp), keyEquivalent: "q")
+        let quit = NSMenuItem(title: "Quit Linkraptor", action: #selector(quitApp), keyEquivalent: "q")
         quit.target = self
         menu.addItem(quit)
     }
@@ -227,7 +244,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMenuDele
         if urls.count == 1 {
             let url = urls.first!
             
-            if url.scheme == "browserino" && url.host == "open" {
+            if url.scheme == "linkraptor" && url.host == "open" {
                 if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
                    let queryItems = components.queryItems,
                    let encodedUrl = queryItems.first(where: { $0.name == "url" })?.value,

@@ -52,13 +52,21 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>Browserino Custom Scheme</string>
+			<string>Linkraptor Custom Scheme</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>browserino</string>
+				<string>linkraptor</string>
 			</array>
 		</dict>
 	</array>
+	<key>SUFeedURL</key>
+	<string>https://github.com/Matmac945/Browserino/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>XTpD+JIsCAYJdlLEFViEtykBKBXS4MrC8FIvNt3uXbs=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUAutomaticallyUpdate</key>
+	<true/>
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>NSUserActivityTypeBrowsingWeb</string>

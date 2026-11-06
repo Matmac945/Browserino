@@ -32,7 +32,7 @@ class BrowserUtil {
             validDirectories.contains { urlsForApplication.path.hasPrefix($0) }
         }
         
-        if let browserino = NSWorkspace.shared.urlForApplication(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "xyz.alexstrnik.Browserino") {
+        if let browserino = NSWorkspace.shared.urlForApplication(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "io.github.matmac945.Linkraptor") {
             filteredUrlsForApplications.removeAll { $0 == browserino }
         }
 

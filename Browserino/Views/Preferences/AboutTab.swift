@@ -17,7 +17,7 @@ struct AboutTab: View {
                 .frame(width: 128, height: 128)
             
             Text(
-                "Browserino v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as! String)"
+                "Linkraptor v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as! String)"
             )
             .font(.title)
             .frame(maxWidth: .infinity)
@@ -27,10 +27,22 @@ struct AboutTab: View {
             
             Button(action: {
                 NSWorkspace.shared.open(
+                    URL(string: "https://github.com/Matmac945/Browserino/")!
+                )
+            }) {
+                Text("https://github.com/Matmac945/Browserino/")
+            }
+            .buttonStyle(.link)
+
+            Spacer()
+                .frame(height: 8)
+
+            Button(action: {
+                NSWorkspace.shared.open(
                     URL(string: "https://github.com/AlexStrNik/Browserino/")!
                 )
             }) {
-                Text("https://github.com/AlexStrNik/Browserino/")
+                Text("Based on Browserino by Aleksandr Strizhnev")
             }
             .buttonStyle(.link)
             
