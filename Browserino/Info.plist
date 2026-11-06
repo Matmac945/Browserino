@@ -60,7 +60,7 @@
 		</dict>
 	</array>
 	<key>SUFeedURL</key>
-	<string>https://github.com/Matmac945/Browserino/releases/latest/download/appcast.xml</string>
+	<string>https://github.com/Matmac945/Linkraptor/releases/latest/download/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>XTpD+JIsCAYJdlLEFViEtykBKBXS4MrC8FIvNt3uXbs=</string>
 	<key>SUEnableAutomaticChecks</key>

@@ -27,10 +27,10 @@ struct AboutTab: View {
             
             Button(action: {
                 NSWorkspace.shared.open(
-                    URL(string: "https://github.com/Matmac945/Browserino/")!
+                    URL(string: "https://github.com/Matmac945/Linkraptor/")!
                 )
             }) {
-                Text("https://github.com/Matmac945/Browserino/")
+                Text("https://github.com/Matmac945/Linkraptor/")
             }
             .buttonStyle(.link)
 

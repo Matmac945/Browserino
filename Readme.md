@@ -24,7 +24,7 @@ What it changes:
 Needs macOS 26. Paste this into Terminal:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Matmac945/Browserino/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Matmac945/Linkraptor/main/scripts/install.sh | bash
 ```
 
 Then set Linkraptor as your default browser: **System Settings → Desktop & Dock → Default web browser**.
@@ -34,7 +34,7 @@ That's it. Linkraptor checks for updates once a day and installs them on its own
 <details>
 <summary>Prefer to install from the DMG?</summary>
 
-1. Download [Linkraptor.dmg](https://github.com/Matmac945/Browserino/releases/latest/download/Linkraptor.dmg) and drag Linkraptor into Applications.
+1. Download [Linkraptor.dmg](https://github.com/Matmac945/Linkraptor/releases/latest/download/Linkraptor.dmg) and drag Linkraptor into Applications.
 2. Open it. macOS will say it can't verify the developer, because Linkraptor isn't signed with a paid Apple certificate. Click **Done**.
 3. Go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to Linkraptor.
 
@@ -62,8 +62,8 @@ Store that file somewhere safe, like a password manager, and never commit it.
 # Build from source
 
 ```bash
-git clone https://github.com/Matmac945/Browserino.git
-cd Browserino
+git clone https://github.com/Matmac945/Linkraptor.git
+cd Linkraptor
 xcodebuild -project Browserino.xcodeproj -scheme Browserino -configuration Release -derivedDataPath build build
 codesign --force --deep --sign - build/Build/Products/Release/Linkraptor.app
 ditto build/Build/Products/Release/Linkraptor.app /Applications/Linkraptor.app

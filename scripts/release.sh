@@ -14,7 +14,7 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 
-REPO="Matmac945/Browserino"
+REPO="Matmac945/Linkraptor"
 TAG="v$VERSION"
 APP_NAME="Linkraptor"
 BUILD_DIR="build"
