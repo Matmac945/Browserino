@@ -35,23 +35,18 @@ struct AboutTab: View {
             .buttonStyle(.link)
 
             Spacer()
-                .frame(height: 8)
+                .frame(height: 16)
 
             Button(action: {
                 NSWorkspace.shared.open(
                     URL(string: "https://github.com/AlexStrNik/Browserino/")!
                 )
             }) {
-                Text("Based on Browserino by Aleksandr Strizhnev")
+                Text("A fork of Browserino by Aleksandr Strizhnev")
+                    .font(.callout)
             }
             .buttonStyle(.link)
-            
-            Spacer()
-                .frame(height: 16)
-            
-            Text("Thanks to @byt3m4st3r, @mihado, @ventz and others for contributions!")
-                .foregroundStyle(.secondary)
-            
+
             Spacer()
         }
     }

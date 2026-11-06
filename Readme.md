@@ -1,3 +1,5 @@
+<img src="images/icon.png" width="128" alt="Linkraptor icon">
+
 # Linkraptor
 
 Linkraptor catches every link you click and asks which browser (or Chrome profile) should open it. It's a small, native macOS app that lives in your menu bar.

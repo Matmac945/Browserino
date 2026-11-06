@@ -65,7 +65,7 @@ struct RuleForm: View {
     @State private var openWithPresented = false
     
     @State private var regex: String = ""
-    @State private var testUrls: String = "https://github.com/AlexStrNik/Browserino\nhttps://x.com/alexstrnik"
+    @State private var testUrls: String = "https://github.com/Matmac945/Linkraptor\nhttps://example.com"
     @State private var url: URL?
     
     private var compiledRegex: Regex<AnyRegexOutput>? {
