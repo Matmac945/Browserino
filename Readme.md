@@ -59,13 +59,23 @@ scripts/release.sh 1.2.0
 
 The script builds a universal app, packages `Linkraptor.dmg`, signs the update and publishes a GitHub Release. Everyone's copy picks it up within a day.
 
-The update-signing key lives in the macOS Keychain under the account `linkraptor`. Without it you can't ship updates, so back it up:
+### The update-signing key
+
+Updates are signed with a key stored in your macOS Keychain under the account `linkraptor`. Without it you can't ship updates, so back it up once:
 
 ```bash
-build/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys --account linkraptor -x linkraptor-private-key.txt
+scripts/signing-key.sh backup
 ```
 
-Store that file somewhere safe, like a password manager, and never commit it.
+That saves it to `.secrets/linkraptor-private-key.txt` inside the repo. The folder is gitignored, so it never gets committed. The file only lives on your Mac, so also keep a copy in a password manager.
+
+**On a new Mac:** clone the repo, put the backup file back at that same path, then run:
+
+```bash
+scripts/signing-key.sh restore
+```
+
+Now `scripts/release.sh` works there too.
 
 # Build from source
 
