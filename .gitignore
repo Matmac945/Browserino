@@ -62,3 +62,6 @@ fastlane/screenshots/**/*.png
 fastlane/test_output
 # Local release builds
 build/
+
+# Update-signing key backup (never commit)
+.secrets/
